@@ -4,7 +4,9 @@ import { WebSocketServer, WebSocket } from 'ws';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import axios from 'axios';
 import { CVParser } from './CVParser.js';
+import { AppRunner } from './AppRunner.js';
 import { logger } from '../utils/Logger.js';
 
 const app = express();
@@ -22,15 +24,23 @@ wss.on('connection', (ws) => {
   clients.add(ws);
   logger.info('Extension Client connected via WebSocket.', 'GatewayServer');
 
-  ws.on('message', (message) => {
+  ws.on('message', async (message) => {
     try {
       const data = JSON.parse(message.toString());
       if (data.type === 'chat') {
         logger.info(`Received WS chat input: "${data.text}"`, 'GatewayServer');
-        ws.send(JSON.stringify({ type: 'reply', text: `Prompt processed: "${data.text}". Triggering application pipeline...` }));
+        
+        // Connect to local LLM for conversational responses and action parsing
+        const llmResponse = await queryLLM(data.text);
+        ws.send(JSON.stringify({ type: 'reply', text: llmResponse.reply }));
+
+        if (llmResponse.action === 'APPLY' && llmResponse.url) {
+          ws.send(JSON.stringify({ type: 'reply', text: `Initiating automation for job URL: ${llmResponse.url}...` }));
+          AppRunner.runJobApplication(llmResponse.url);
+        }
       }
     } catch (e) {
-      logger.error('Failed to parse incoming WS payload', e, 'GatewayServer');
+      logger.error('Failed to process message or LLM query', e, 'GatewayServer');
     }
   });
 
@@ -39,6 +49,68 @@ wss.on('connection', (ws) => {
     logger.info('Extension Client disconnected from WebSocket.', 'GatewayServer');
   });
 });
+
+async function queryLLM(userInput: string): Promise<{ reply: string; action?: string; url?: string }> {
+  try {
+    const apiUrl = process.env.LLM_API_URL || 'http://127.0.0.1:20128/v1';
+    
+    // Load Profile context to guide conversation
+    let profileContext = '';
+    const profilePath = path.resolve('/Users/marwanhassan/playwright-automation-jobs/src/application-agent/profile/profile.json');
+    if (fs.existsSync(profilePath)) {
+      profileContext = fs.readFileSync(profilePath, 'utf8');
+    }
+
+    const response = await axios.post(`${apiUrl}/chat/completions`, {
+      model: 'Test',
+      messages: [
+        {
+          role: 'system',
+          content: `You are the intelligent brain of the OpenClaw Career Agent.
+You assist candidate Maro with his job search.
+Profile context: ${profileContext}
+
+Analyze user input. Determine if they want to execute an action (e.g. apply to a job URL).
+Always respond with JSON format:
+{
+  "reply": "Conversational reply back to user",
+  "action": "APPLY" | "NONE",
+  "url": "Identified job URL from input if any"
+}`
+        },
+        {
+          role: 'user',
+          content: userInput
+        }
+      ],
+      response_format: { type: 'json_object' }
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.LLM_API_KEY || ''}`
+      }
+    });
+
+    return JSON.parse(response.data.choices[0].message.content);
+  } catch (error) {
+    logger.error('LLM routing query failed. Falling back to default parser.', error, 'GatewayServer');
+    
+    // Fallback extraction regex
+    const urlRegex = /(https?:\/\/[^\s]+)/;
+    const match = userInput.match(urlRegex);
+    if (match) {
+      return {
+        reply: `I detected a job URL in your message. Initiating Playwright workflow.`,
+        action: 'APPLY',
+        url: match[0]
+      };
+    }
+    return {
+      reply: `Sorry, I couldn't reach the local LLM helper model. Please verify your OpenClaw setup.`,
+      action: 'NONE'
+    };
+  }
+}
 
 // Broadcast log helpers
 export function broadcastLog(text: string) {
