@@ -68,7 +68,9 @@ export class BrowserContext {
     await this.executeSafe(`click`, async () => {
       const locator = this.page.locator(selector).first();
       await locator.waitFor({ state: 'visible', timeout: t });
-      await locator.click({ timeout: t });
+      // Scroll into view first and click with force option to bypass overlapping overlays
+      await locator.scrollIntoViewIfNeeded({ timeout: t }).catch(() => {});
+      await locator.click({ timeout: t, force: true });
     }, selector);
   }
 
