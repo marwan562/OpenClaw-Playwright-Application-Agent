@@ -25,6 +25,8 @@ export class BrowserManager {
       const absoluteUserDataDir = path.resolve(process.cwd(), userDataDir);
       logger.info(`Launching browser with persistent context at: ${absoluteUserDataDir}`, 'BrowserManager');
       this.context = await chromium.launchPersistentContext(absoluteUserDataDir, {
+        // Launch installed Google Chrome, not Playwright's bundled Chromium.
+        channel: 'chrome',
         headless,
         slowMo,
         args: launchArgs,
@@ -35,6 +37,8 @@ export class BrowserManager {
     } else {
       logger.info('Launching standard browser...', 'BrowserManager');
       this.browser = await chromium.launch({
+        // Launch installed Google Chrome, not Playwright's bundled Chromium.
+        channel: 'chrome',
         headless,
         slowMo,
         args: launchArgs
