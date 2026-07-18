@@ -1,8 +1,10 @@
 import { BrowserManager } from './application-agent/browser/BrowserManager.js';
 import { BrowserContext } from './application-agent/browser/BrowserContext.js';
 import { LinkedInPlatform } from './application-agent/platforms/linkedin/LinkedInPlatform.js';
+import { WuzzufPlatform } from './application-agent/platforms/wuzzuf/WuzzufPlatform.js';
+import { IndeedPlatform } from './application-agent/platforms/indeed/IndeedPlatform.js';
 import { logger } from './application-agent/utils/Logger.js';
-import { CandidateProfile } from './application-agent/types/index.js';
+import { CandidateProfile, JobPlatform } from './application-agent/types/index.js';
 import { notificationManager } from './application-agent/utils/NotificationManager.js';
 import { CurrencyConverter } from './application-agent/utils/CurrencyConverter.js';
 import * as fs from 'fs';
@@ -52,23 +54,38 @@ async function main() {
     const page = pages.length > 0 ? pages[0] : await pwContext.newPage();
     browserCtx = new BrowserContext(page, pwContext);
 
-    // Initialize LinkedIn platform
-    const platform = new LinkedInPlatform(browserCtx, profile);
+    // Initialize platform based on URL
+    let platform: JobPlatform;
+    if (jobUrl.includes('wuzzuf.net')) {
+      platform = new WuzzufPlatform(browserCtx, profile);
+    } else if (jobUrl.includes('indeed.com')) {
+      platform = new IndeedPlatform(browserCtx, profile);
+    } else {
+      platform = new LinkedInPlatform(browserCtx, profile);
+    }
 
     // 1. Open Job URL
     await platform.openJob(jobUrl);
 
-    // 2. Detect Easy Apply
+    // 2. Detect Apply Method
     const isEasyApply = await platform.detectApplyMethod();
     if (!isEasyApply) {
-      logger.warn('This job listing does not support "Easy Apply". Automated filling is not possible.');
+      logger.warn('This job listing does not support "Easy Apply" / automated application. Automated filling is not possible.');
       return;
     }
 
-    // 3. Open Easy Apply modal
-    const opened = await platform.openEasyApply();
+    // 3. Open Apply form/modal
+    let opened = false;
+    if (platform instanceof LinkedInPlatform) {
+      opened = await platform.openEasyApply();
+    } else if (platform instanceof WuzzufPlatform) {
+      opened = await platform.openApplyForm();
+    } else if (platform instanceof IndeedPlatform) {
+      opened = await platform.openApplyForm();
+    }
+
     if (!opened) {
-      logger.error('Failed to open Easy Apply modal. Aborting application.');
+      logger.error('Failed to open application form. Aborting application.');
       return;
     }
 
@@ -81,8 +98,12 @@ async function main() {
     logger.info('Application form successfully filled. Browser left open for your review.');
 
     // Send Telegram Success Notification
-    const finalSalaryUsed = CurrencyConverter.convertSalary(500, platform.getJobLocation());
-    await notificationManager.sendSuccess(jobUrl, platform.getJobLocation(), finalSalaryUsed);
+    let jobLocation = 'Cairo, Egypt';
+    if (typeof (platform as any).getJobLocation === 'function') {
+      jobLocation = (platform as any).getJobLocation();
+    }
+    const finalSalaryUsed = CurrencyConverter.convertSalary(500, jobLocation);
+    await notificationManager.sendSuccess(jobUrl, jobLocation, finalSalaryUsed);
     
     // Maintain node process alive so user can review and click submit in browser
     logger.info('Press Ctrl+C to terminate the process and close the browser.');
