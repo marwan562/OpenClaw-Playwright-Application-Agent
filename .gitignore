@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Production build outputs
+dist/
+
+# Local configuration environment (contains sensitive API keys and tokens)
+.env
+.env.local
+.env.*.local
+
+# Logs and debug details
+logs/
+*.log
+npm-debug.log*
+
+# Playwright screenshots and test reports
+screenshots/
+playwright-report/
+test-results/
+
+# System specific files
+.DS_Store
+Thumbs.db

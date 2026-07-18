@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mock Job Application Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            padding: 40px;
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 0 auto;
+        }
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="tel"], input[type="email"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .radio-group, .checkbox-group {
+            margin-top: 5px;
+        }
+        button {
+            background-color: #0a66c2;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 24px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #004182;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        #easy-apply-btn {
+            display: block;
+            margin: 50px auto;
+        }
+        #application-modal {
+            display: none;
+        }
+        #application-modal.open {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Mock Job Portal</h2>
+        <p>This page simulates a LinkedIn Job Details page with an Easy Apply flow.</p>
+        <button id="easy-apply-btn" class="jobs-apply-button">Easy Apply</button>
+
+        <!-- Modal Simulator -->
+        <div id="application-modal" class="jobs-easy-apply-modal">
+            <div class="jobs-easy-apply-modal__content">
+                <h3>Apply to Software Engineer</h3>
+                <hr>
+
+                <!-- Step 1: Personal Info -->
+                <div id="step-1" class="step active">
+                    <h4>Step 1: Contact Info</h4>
+                    <div class="form-group">
+                        <label for="first-name-input">First name *</label>
+                        <input type="text" id="first-name-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last-name-input">Last name *</label>
+                        <input type="text" id="last-name-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email-input">Email address *</label>
+                        <input type="email" id="email-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone-input">Mobile phone number *</label>
+                        <input type="tel" id="phone-input" required>
+                    </div>
+                </div>
+
+                <!-- Step 2: Resume Upload -->
+                <div id="step-2" class="step">
+                    <h4>Step 2: Resume</h4>
+                    <div class="form-group">
+                        <label for="resume-file">Upload resume *</label>
+                        <input type="file" id="resume-file" required>
+                    </div>
+                </div>
+
+                <!-- Step 3: Custom Questions -->
+                <div id="step-3" class="step">
+                    <h4>Step 3: Additional Questions</h4>
+                    <fieldset class="form-group">
+                        <legend>How many years of experience do you have with TypeScript? *</legend>
+                        <div class="radio-group">
+                            <label><input type="radio" name="ts-experience" value="0-1"> 0-1 years</label><br>
+                            <label><input type="radio" name="ts-experience" value="2-3"> 2-3 years</label><br>
+                            <label><input type="radio" name="ts-experience" value="4+"> 4+ years</label>
+                        </div>
+                    </fieldset>
+                    <div class="form-group">
+                        <label for="sponsorship-select">Will you now or in the future require visa sponsorship? *</label>
+                        <select id="sponsorship-select" required>
+                            <option value="">Select option</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="salary-input">What is your expected monthly salary (USD)? *</label>
+                        <input type="text" id="salary-input" placeholder="e.g. 2000" required>
+                    </div>
+                </div>
+
+                <!-- Step 4: Review Application -->
+                <div id="step-4" class="step">
+                    <h4>Step 4: Review your application</h4>
+                    <p>Please review all details before submitting.</p>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="terms" required> I agree to the terms and conditions *
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Navigation buttons -->
+                <div class="button-group">
+                    <button id="cancel-btn" class="artdeco-modal__dismiss" style="background-color: #ccc; color: black;">Cancel</button>
+                    <button id="next-btn">Next</button>
+                    <button id="review-btn" style="display: none;">Review</button>
+                    <button id="submit-btn" style="display: none;">Submit application</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const easyApplyBtn = document.getElementById('easy-apply-btn');
+        const modal = document.getElementById('application-modal');
+        const nextBtn = document.getElementById('next-btn');
+        const reviewBtn = document.getElementById('review-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        let currentStepNum = 1;
+
+        easyApplyBtn.addEventListener('click', () => {
+            modal.classList.add('open');
+            easyApplyBtn.style.display = 'none';
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            modal.classList.remove('open');
+            easyApplyBtn.style.display = 'block';
+            resetForm();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            goToStep(currentStepNum + 1);
+        });
+
+        reviewBtn.addEventListener('click', () => {
+            goToStep(4);
+        });
+
+        submitBtn.addEventListener('click', () => {
+            alert('Form submitted! (In production this should NOT be reached automatically)');
+        });
+
+        function goToStep(stepNum) {
+            document.getElementById(`step-${currentStepNum}`).classList.remove('active');
+            currentStepNum = stepNum;
+            document.getElementById(`step-${currentStepNum}`).classList.add('active');
+
+            if (currentStepNum === 3) {
+                nextBtn.style.display = 'none';
+                reviewBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            } else if (currentStepNum === 4) {
+                nextBtn.style.display = 'none';
+                reviewBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.style.display = 'inline-block';
+                reviewBtn.style.display = 'none';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        function resetForm() {
+            document.getElementById(`step-${currentStepNum}`).classList.remove('active');
+            currentStepNum = 1;
+            document.getElementById('step-1').classList.add('active');
+            nextBtn.style.display = 'inline-block';
+            reviewBtn.style.display = 'none';
+            submitBtn.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

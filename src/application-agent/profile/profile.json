@@ -1,0 +1,21 @@
+{
+  "firstName": "Marwan",
+  "lastName": "Hassan",
+  "email": "marwandeveloper33@gmail.com",
+  "phone": "+201270189684",
+  "city": "Alexandria",
+  "country": "Egypt",
+  "linkedin": "https://www.linkedin.com/in/marwandeveloper33",
+  "github": "https://github.com/sapliy",
+  "portfolio": "https://yallaegipto.com",
+  "experience": 2,
+  "remote": true,
+  "relocate": true,
+  "visaSponsorship": true,
+  "additionalInfo": {
+    "salaryExpectation": "500 USD",
+    "noticePeriod": "Immediately",
+    "authorizedToWorkInUS": "No",
+    "skills": "JavaScript, TypeScript, Go, Python, React, Next.js, Nuxt.js, Node.js, Express.js, Nest.js, gRPC, PostgreSQL, MongoDB, Redis, Kafka, Docker, Prismic CMS, Stripe"
+  }
+}
