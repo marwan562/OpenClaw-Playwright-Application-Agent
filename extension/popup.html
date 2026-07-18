@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>OpenClaw Companion</title>
+  <style>
+    body {
+      width: 320px;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #09090b;
+      color: #fafafa;
+      padding: 16px;
+    }
+    h1 { font-size: 18px; margin: 0 0 12px 0; color: #6366f1; }
+    .status {
+      font-size: 13px;
+      padding: 8px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .status-active { color: #10b981; }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #6366f1;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #4f46e5; }
+    .footer { font-size: 11px; color: #71717a; text-align: center; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>OpenClaw Companion ⚡</h1>
+  <div class="status">
+    <span>Connection Status:</span>
+    <span id="connection-status" class="status-active">Connected</span>
+  </div>
+  <button id="open-sidepanel">Open Side Panel</button>
+  <div class="footer">OpenClaw Browser Engine v1.0.0</div>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>OpenClaw Companion Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #09090b;
+      color: #fafafa;
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 260px;
+      background: #18181b;
+      border-right: 1px solid #27272a;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+    .sidebar h2 { font-size: 16px; margin: 0 0 20px 0; color: #6366f1; }
+    .nav-item {
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    .nav-item:hover, .nav-item.active { background: #27272a; color: white; }
+    .content {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+    }
+    .section-title { font-size: 24px; margin-bottom: 24px; font-weight: bold; }
+    .card {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>OpenClaw Dashboard</h2>
+    <div class="nav-item active">Overview</div>
+    <div class="nav-item">9Router Config</div>
+    <div class="nav-item">MCP Servers</div>
+    <div class="nav-item">Logs & Metrics</div>
+  </div>
+  <div class="content">
+    <div class="section-title">Overview</div>
+    <div class="card">
+      <h3>Active Applications</h3>
+      <p>Platforms: LinkedIn, Wuzzuf, Indeed</p>
+      <p>Status: Monitoring active schedules</p>
+    </div>
+    <div class="card">
+      <h3>System Configuration</h3>
+      <p>9Router Mode: Auto routing with latency fallbacks</p>
+      <p>Local Server: 127.0.0.1:20128</p>
+    </div>
+  </div>
+</body>
+</html>
