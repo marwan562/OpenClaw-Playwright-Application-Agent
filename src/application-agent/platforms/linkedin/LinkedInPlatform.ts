@@ -125,12 +125,8 @@ export class LinkedInPlatform implements JobPlatform {
       // Check if there is a resume upload needed in this step
       const hasFileField = fields.some(f => f.type === 'file');
       if (hasFileField) {
-        const resumePath = process.env.RESUME_PATH || '';
-        if (resumePath) {
-          await resumeUploader.uploadResume(this.browserCtx, formContentSelector, resumePath);
-        } else {
-          logger.warn('RESUME_PATH is not set in environment, skipping resume upload.', 'LinkedInPlatform');
-        }
+        const resumePath = process.env.RESUME_PATH || '/Users/marwanhassan/playwright-automation-jobs/assets/Marwan_Hassan-Resume.pdf';
+        await resumeUploader.uploadResume(this.browserCtx, formContentSelector, resumePath);
       }
 
       // Check for validation errors or identical page content (detect stuck state)
