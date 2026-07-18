@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { broadcastLog } from '../server/server.js';
 
 export class Logger {
   private logFilePath: string;
@@ -27,6 +28,9 @@ export class Logger {
     const formatted = `[\x1b[36m${this.formatTimestamp()}\x1b[0m] [\x1b[32mINFO\x1b[0m] ${ctxStr}${message}`;
     console.log(formatted);
     this.writeToFile(`[${this.formatTimestamp()}] [INFO] ${ctxStr}${message}`);
+    try {
+      broadcastLog(`[INFO] ${ctxStr}${message}`);
+    } catch {}
   }
 
   public warn(message: string, context?: string): void {
@@ -34,6 +38,9 @@ export class Logger {
     const formatted = `[\x1b[36m${this.formatTimestamp()}\x1b[0m] [\x1b[33mWARN\x1b[0m] ${ctxStr}${message}`;
     console.warn(formatted);
     this.writeToFile(`[${this.formatTimestamp()}] [WARN] ${ctxStr}${message}`);
+    try {
+      broadcastLog(`[WARN] ${ctxStr}${message}`);
+    } catch {}
   }
 
   public error(message: string, error?: any, context?: string): void {
@@ -45,6 +52,9 @@ export class Logger {
     const formatted = `[\x1b[36m${this.formatTimestamp()}\x1b[0m] [\x1b[31mERROR\x1b[0m] ${ctxStr}${message}${errDetail}`;
     console.error(formatted);
     this.writeToFile(`[${this.formatTimestamp()}] [ERROR] ${ctxStr}${message}${errDetail}`);
+    try {
+      broadcastLog(`[ERROR] ${ctxStr}${message}${errDetail}`);
+    } catch {}
   }
 
   public action(actionName: string, details: string, selector?: string): void {

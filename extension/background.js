@@ -2,8 +2,8 @@ let ws = null;
 let reconnectInterval = 5000;
 
 function connectGateway() {
-  // Connect to local OpenClaw gateway
-  ws = new WebSocket('ws://127.0.0.1:18789/ws');
+  // Connect to local OpenClaw companion gateway server (port 3000)
+  ws = new WebSocket('ws://127.0.0.1:3000');
 
   ws.onopen = () => {
     console.log('Connected to OpenClaw Gateway');

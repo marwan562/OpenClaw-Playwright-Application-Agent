@@ -5,6 +5,7 @@
   "main": "dist/run.js",
   "scripts": {
     "build": "tsc",
+    "server": "tsc && node dist/application-agent/server/server.js",
     "start": "tsx src/run.ts",
     "test": "tsx src/test-local.ts"
   },
@@ -12,13 +13,21 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.2.0",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/ws": "^8.18.1",
     "axios": "^1.6.8",
     "dotenv": "^16.4.5",
-    "playwright": "^1.42.1"
+    "express": "^5.2.1",
+    "multer": "^2.2.0",
+    "pdf-parse": "^2.4.5",
+    "playwright": "^1.42.1",
+    "ws": "^8.21.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
-    "typescript": "^5.3.3",
-    "tsx": "^4.7.1"
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
   }
 }
