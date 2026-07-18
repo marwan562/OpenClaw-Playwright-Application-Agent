@@ -12,12 +12,11 @@ dotenv.config();
 async function runLocalTest() {
   logger.info('=== Starting Local Mock Application Automation Test ===');
 
-  // 1. Create a dummy resume file for testing
-  const dummyResumeDir = path.resolve(process.cwd());
-  const dummyResumePath = path.join(dummyResumeDir, 'resume.pdf');
-  if (!fs.existsSync(dummyResumePath)) {
-    logger.info('Creating dummy resume file for test...', 'LocalTest');
-    fs.writeFileSync(dummyResumePath, 'Dummy PDF content for resume uploader test.');
+  // 1. Verify actual resume file exists
+  const resumePath = path.resolve(process.cwd(), 'assets/Marwan_Hassan-Resume.pdf');
+  if (!fs.existsSync(resumePath)) {
+    logger.error(`Resume PDF not found at path: ${resumePath}`);
+    process.exit(1);
   }
 
   // 2. Load Profile
@@ -29,8 +28,8 @@ async function runLocalTest() {
   const rawProfile = fs.readFileSync(profilePath, 'utf8');
   const profile: CandidateProfile = JSON.parse(rawProfile);
 
-  // Set resume path dynamically in environment if not present
-  process.env.RESUME_PATH = dummyResumePath;
+  // Set resume path dynamically in environment
+  process.env.RESUME_PATH = resumePath;
 
   // 3. Initialize Browser
   const browserManager = new BrowserManager();
