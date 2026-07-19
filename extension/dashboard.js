@@ -317,6 +317,7 @@ async function uploadCVFile(file) {
       uploadStatus.textContent = 'Failed to analyze CV: ' + data.error;
     }
   } catch (e) {
+    console.error('CV upload error:', e);
     uploadStatus.style.color = '#ef4444';
     uploadStatus.textContent = 'Server communications error during upload.';
   }

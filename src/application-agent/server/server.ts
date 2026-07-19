@@ -30,6 +30,10 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Set up CV upload storage
+const uploadsDir = path.resolve(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 const upload = multer({ dest: 'uploads/' });
 
 // Active WebSocket clients
