@@ -11,7 +11,7 @@ job-agent profile show --id profile-backend
 job-agent profile edit --input ./edited-profile.json
 ```
 
-Milestone one deliberately accepts structured JSON imports. The legacy PDF parser remains available in the old server but its model output is not treated as verified profile facts.
+PDF imports use local deterministic text extraction and mark every extracted fact unverified; the imported CV is not approved for upload. Review and edit the structured profile before application use. JSON imports are validated directly against the full profile schema.
 
 ## Search and jobs
 

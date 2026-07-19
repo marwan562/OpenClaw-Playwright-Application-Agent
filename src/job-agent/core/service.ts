@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { z } from 'zod';
+import { PDFParse } from 'pdf-parse';
 import { FixtureJobAdapter, MockPlaywrightAdapter, type AdapterContext, type JobSiteAdapter } from '../adapters/index.js';
 import { JobAgentDatabase, type AuditRecord, type TransitionRecord } from '../database/index.js';
 import {
@@ -111,10 +112,9 @@ export class JobAgentService {
 
   async importProfile(filePath: string): Promise<CandidateProfile> {
     const absolutePath = resolve(filePath);
-    if (!absolutePath.endsWith('.json')) {
-      throw new Error('Milestone one imports a structured JSON profile. PDF extraction is retained in the legacy agent but requires user review before facts can be verified.');
-    }
-    const parsed = CandidateProfileSchema.parse(JSON.parse(await readFile(absolutePath, 'utf8')));
+    const parsed = absolutePath.toLowerCase().endsWith('.pdf')
+      ? await this.extractUnverifiedPdfProfile(absolutePath)
+      : CandidateProfileSchema.parse(JSON.parse(await readFile(absolutePath, 'utf8')));
     const profile = CandidateProfileSchema.parse({
       ...parsed,
       approvedCvVariants: parsed.approvedCvVariants.map((variant) => ({ ...variant, path: resolve(process.cwd(), variant.path) })),
@@ -123,6 +123,41 @@ export class JobAgentService {
     this.database.saveProfile(profile, true);
     this.audit('profile', profile.id, 'profile_imported', { sourceFile: absolutePath, factCount: profile.facts.length }, id());
     return profile;
+  }
+
+  private async extractUnverifiedPdfProfile(absolutePath: string): Promise<CandidateProfile> {
+    const parser = new PDFParse({ data: await readFile(absolutePath) });
+    let text: string;
+    try { text = (await parser.getText()).text; }
+    finally { await parser.destroy(); }
+    const email = text.match(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i)?.[0];
+    const phone = text.match(/\+?\d[\d\s()-]{7,}\d/)?.[0]?.replace(/\s+/g, ' ').trim();
+    if (!email || !phone) throw new Error('PDF import could not deterministically extract required contact fields; use an editable structured JSON profile.');
+    const lines = text.split(/\r?\n/).map((line) => line.replace(/[*#_]/g, '').trim()).filter(Boolean);
+    const name = lines.find((line) => line.length < 80 && /^[\p{L}][\p{L}\s.'-]+$/u.test(line)) ?? 'Unknown Candidate';
+    const [firstName, ...lastParts] = name.split(/\s+/);
+    const locationMatch = text.match(/\b(Cairo|Alexandria)\s*,\s*(Egypt)\b/i);
+    const vocabulary = ['JavaScript', 'TypeScript', 'Go', 'Python', 'React', 'Next.js', 'Node.js', 'Express.js', 'Nest.js', 'gRPC', 'PostgreSQL', 'MongoDB', 'Redis', 'Kafka', 'RabbitMQ', 'MQTT', 'Docker'];
+    const skills = vocabulary.filter((skill) => text.toLowerCase().includes(skill.toLowerCase()));
+    const timestamp = now();
+    const profileId = `profile-${createHash('sha256').update(absolutePath).digest('hex').slice(0, 12)}`;
+    const extractedFacts = [
+      ['identity.firstName', firstName], ['identity.lastName', lastParts.join(' ')], ['contact.email', email], ['contact.phone', phone]
+    ].map(([field, value]) => ({
+      id: `fact-${createHash('sha256').update(`${profileId}:${field}`).digest('hex').slice(0, 12)}`,
+      field, value, provenance: 'model_generated' as const, verified: false,
+      source: 'deterministic PDF text extraction; user verification required', updatedAt: timestamp
+    }));
+    return CandidateProfileSchema.parse({
+      id: profileId, displayName: `${name} — imported CV (review required)`,
+      identity: { firstName, lastName: lastParts.join(' ') }, contact: { email, phone },
+      location: { city: locationMatch?.[1] ?? '', country: locationMatch?.[2] ?? '' },
+      workAuthorization: [], sponsorshipRequired: null, availability: null,
+      salaryPreferences: { minimum: null, currency: null, period: null }, relocationPreference: 'unknown',
+      skills, experience: [], education: [], projects: [], certifications: [], languages: [], portfolioLinks: [],
+      approvedCvVariants: [{ id: 'cv-imported', name: 'Imported CV — approval required', path: absolutePath, tags: [], approved: false }],
+      reusableApprovedAnswers: [], facts: extractedFacts, createdAt: timestamp, updatedAt: timestamp
+    });
   }
 
   getProfile(profileId?: string): CandidateProfile {

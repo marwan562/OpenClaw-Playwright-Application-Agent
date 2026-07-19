@@ -23,6 +23,11 @@
           "fixture",
           "mock"
         ]
+      },
+      "artifactRetentionDays": {
+        "type": "integer",
+        "minimum": 1,
+        "default": 14
       }
     },
     "additionalProperties": false

@@ -22,4 +22,4 @@ Profile import through OpenClaw is constrained to the linked project. Uploads ar
 
 Never bypass CAPTCHA, MFA, bot protection, rate limits, robots/access controls, or site terms. Use daily limits, site allowlists, quiet hours, cancellation signals, and conservative retry policies. Retry only `FAILED_RETRYABLE`; never retry an uncertain write through another adapter or integration.
 
-Screenshots and traces may contain PII. They are written beneath the configured data directory with correlation IDs. Milestone one exposes a retention setting placeholder; production adapters must implement deletion after `JOB_AGENT_SCREENSHOT_RETENTION_DAYS` before going live.
+Screenshots and traces may contain PII. They are written beneath the configured data directory with correlation IDs. The mock adapter prunes artifact directories older than `JOB_AGENT_SCREENSHOT_RETENTION_DAYS` (14 by default); every production adapter must use the same retention boundary before going live.

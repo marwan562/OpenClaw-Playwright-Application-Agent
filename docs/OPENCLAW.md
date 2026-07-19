@@ -33,6 +33,7 @@ The generated plugin schema accepts only:
 - `dataDir`: local SQLite and artifact directory.
 - `dryRun`: defaults to `true`; prevents the service from proceeding to submission.
 - `allowedSites`: defaults to `fixture,mock`; restrict this before enabling live adapters.
+- `artifactRetentionDays`: defaults to `14`; old correlation-ID artifact directories are pruned before mock adapter runs.
 
 The plugin refuses profile import paths outside the linked project. It does not modify OpenClaw configuration, schedules, channels, or Gateway state itself.
 

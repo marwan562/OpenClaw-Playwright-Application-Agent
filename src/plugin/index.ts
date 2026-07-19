@@ -10,6 +10,15 @@ const OptionalString = Type.Optional(Type.String());
 const OptionalBoolean = Type.Optional(Type.Boolean());
 const OptionalNumber = Type.Optional(Type.Number());
 const NullableString = Type.Union([Type.String(), Type.Null()]);
+const ApplicationState = Type.Union([
+  Type.Literal('DISCOVERED'), Type.Literal('NORMALIZED'), Type.Literal('SCORED'), Type.Literal('SELECTED'),
+  Type.Literal('APPLICATION_STARTED'), Type.Literal('QUESTIONS_EXTRACTED'), Type.Literal('ANSWERS_PREPARED'),
+  Type.Literal('WAITING_FOR_APPROVAL'), Type.Literal('FILLING'), Type.Literal('VALIDATING'), Type.Literal('READY_TO_SUBMIT'),
+  Type.Literal('SUBMITTING'), Type.Literal('SUBMITTED'), Type.Literal('SKIPPED'), Type.Literal('DUPLICATE'),
+  Type.Literal('REJECTED_BY_USER'), Type.Literal('AUTH_REQUIRED'), Type.Literal('USER_ACTION_REQUIRED'),
+  Type.Literal('CAPTCHA_REQUIRED'), Type.Literal('POLICY_BLOCKED'), Type.Literal('FAILED_RETRYABLE'),
+  Type.Literal('FAILED_PERMANENT'), Type.Literal('CANCELLED')
+]);
 const pluginRoot = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 
 const ConfigSchema = Type.Object({
@@ -121,7 +130,7 @@ export default defineToolPlugin({
     }),
     tool({
       name: 'jobs_application_list', description: 'List durable applications, optionally filtering by state.',
-      parameters: Type.Object({ state: OptionalString }, Strict),
+      parameters: Type.Object({ state: Type.Optional(ApplicationState) }, Strict),
       execute: ({ state }, config) => service(config, (jobs) => jobs.listApplications(state as Parameters<typeof jobs.listApplications>[0]))
     }),
     tool({

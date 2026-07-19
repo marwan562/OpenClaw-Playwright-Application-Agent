@@ -6,7 +6,7 @@ The previous LinkedIn, Wuzzuf, and Indeed Playwright agent remains under `src/ap
 
 ## What milestone one does
 
-- Imports and validates an editable structured candidate profile with provenance-tracked facts.
+- Imports JSON or PDF CV data into an editable structured candidate profile with provenance-tracked facts; deterministic PDF extraction remains unverified until edited.
 - Searches a local fixture adapter, normalizes jobs, and deduplicates by source ID or stable fingerprint.
 - Scores jobs with explainable, configurable components.
 - Persists campaigns, runs, applications, approvals, transitions, and audit events in SQLite.
