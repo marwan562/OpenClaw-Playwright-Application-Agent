@@ -1,33 +1,63 @@
 {
   "name": "playwright-automation-jobs",
   "version": "1.0.0",
-  "description": "Modular Playwright application agent for OpenClaw",
+  "description": "Local, approval-first job application toolkit for OpenClaw and the command line",
   "main": "dist/run.js",
+  "type": "module",
+  "bin": {
+    "job-agent": "dist/job-agent/cli/index.js"
+  },
   "scripts": {
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "server": "tsc && node dist/application-agent/server/server.js",
     "start": "tsx src/run.ts",
-    "test": "tsx src/test-local.ts"
+    "test": "vitest run",
+    "test:legacy": "npm run build && node dist/test-local.js",
+    "job-agent": "npm run build --silent && node dist/job-agent/cli/index.js",
+    "vertical-slice": "npm run build --silent && node dist/job-agent/cli/index.js demo --reset",
+    "plugin:build": "npm run build && openclaw plugins build --root . --entry ./dist/plugin/index.js",
+    "plugin:validate": "npm run build && openclaw plugins validate --root . --entry ./dist/plugin/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "files": [
+    "dist",
+    "fixtures",
+    "docs",
+    "openclaw.plugin.json",
+    "README.md"
+  ],
+  "openclaw": {
+    "extensions": [
+      "./dist/plugin/index.js"
+    ]
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.5.17"
+  },
   "dependencies": {
     "@types/express": "^5.0.6",
     "@types/multer": "^2.2.0",
     "@types/pdf-parse": "^1.1.5",
     "@types/ws": "^8.18.1",
     "axios": "^1.6.8",
+    "commander": "^15.0.0",
     "dotenv": "^16.4.5",
     "express": "^5.2.1",
     "multer": "^2.2.0",
     "pdf-parse": "^2.4.5",
     "playwright": "^1.42.1",
-    "ws": "^8.21.1"
+    "typebox": "^1.3.6",
+    "ws": "^8.21.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^20.11.24",
+    "@types/node": "^24.13.3",
+    "openclaw": "^2026.7.1-2",
     "tsx": "^4.7.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.10"
   }
 }

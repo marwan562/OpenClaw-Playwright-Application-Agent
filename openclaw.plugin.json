@@ -1,0 +1,49 @@
+{
+  "id": "job-agent",
+  "name": "Job Agent",
+  "description": "Local approval-first job discovery, scoring, campaign and application tools.",
+  "version": "0.1.0",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "dataDir": {
+        "type": "string",
+        "description": "Local directory for the SQLite database and redacted artifacts."
+      },
+      "dryRun": {
+        "type": "boolean",
+        "default": true,
+        "description": "Prevent final submission even after application approval."
+      },
+      "allowedSites": {
+        "type": "array",
+        "items": { "type": "string" },
+        "default": ["fixture", "mock"]
+      }
+    }
+  },
+  "activation": { "onStartup": true },
+  "contracts": {
+    "tools": [
+      "jobs_profile_import",
+      "jobs_profile_get",
+      "jobs_profile_update",
+      "jobs_search",
+      "jobs_get",
+      "jobs_score",
+      "jobs_prepare_application",
+      "jobs_apply",
+      "jobs_application_get",
+      "jobs_application_list",
+      "jobs_application_retry",
+      "jobs_campaign_create",
+      "jobs_campaign_list",
+      "jobs_campaign_run",
+      "jobs_campaign_pause",
+      "jobs_campaign_resume",
+      "jobs_approval_respond",
+      "jobs_emergency_stop"
+    ]
+  }
+}

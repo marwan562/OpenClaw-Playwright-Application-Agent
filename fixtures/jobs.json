@@ -1,0 +1,47 @@
+[
+  {
+    "source": "fixture",
+    "sourceId": "node-backend-egypt-001",
+    "url": "mock://jobs/node-backend-egypt-001",
+    "employer": "Example Systems",
+    "title": "Node.js Backend Engineer",
+    "description": "Build remote TypeScript and Node.js services with Nest.js, PostgreSQL, Redis, Docker and REST APIs for a distributed product team.",
+    "location": "Egypt / Europe",
+    "workplaceType": "remote",
+    "seniority": "mid-level",
+    "requiredSkills": ["TypeScript", "Node.js", "PostgreSQL", "RESTful APIs"],
+    "preferredSkills": ["Nest.js", "Redis", "Docker"],
+    "salary": { "minimum": 1200, "maximum": 2200, "currency": "USD", "period": "month" },
+    "applicationMethod": "external_form"
+  },
+  {
+    "source": "fixture",
+    "sourceId": "node-backend-egypt-duplicate",
+    "url": "mock://jobs/node-backend-egypt-duplicate",
+    "employer": "Example Systems",
+    "title": "Node.js Backend Engineer",
+    "description": "Build remote TypeScript and Node.js services with Nest.js, PostgreSQL, Redis, Docker and REST APIs for a distributed product team.",
+    "location": "Egypt / Europe",
+    "workplaceType": "remote",
+    "seniority": "mid-level",
+    "requiredSkills": ["TypeScript", "Node.js", "PostgreSQL", "RESTful APIs"],
+    "preferredSkills": ["Nest.js", "Redis", "Docker"],
+    "salary": { "minimum": 1200, "maximum": 2200, "currency": "USD", "period": "month" },
+    "applicationMethod": "external_form"
+  },
+  {
+    "source": "fixture",
+    "sourceId": "frontend-onsite-002",
+    "url": "mock://jobs/frontend-onsite-002",
+    "employer": "Example Retail",
+    "title": "On-site Java Developer",
+    "description": "Maintain an on-site Java and Spring system in Berlin. German fluency is required.",
+    "location": "Berlin, Germany",
+    "workplaceType": "onsite",
+    "seniority": "senior",
+    "requiredSkills": ["Java", "Spring", "German"],
+    "preferredSkills": ["Kubernetes"],
+    "salary": null,
+    "applicationMethod": "external_form"
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "id": "profile-backend",
+  "displayName": "Marwan Hassan — Backend",
+  "identity": { "firstName": "Marwan", "lastName": "Hassan" },
+  "contact": { "email": "marwandeveloper33@gmail.com", "phone": "+201270189684" },
+  "location": { "city": "Alexandria", "country": "Egypt" },
+  "workAuthorization": ["Egypt"],
+  "sponsorshipRequired": true,
+  "availability": "Immediately",
+  "salaryPreferences": { "minimum": 500, "currency": "USD", "period": "month" },
+  "relocationPreference": "yes",
+  "skills": ["JavaScript", "TypeScript", "Node.js", "Express.js", "Nest.js", "PostgreSQL", "MongoDB", "Redis", "Kafka", "Docker", "gRPC", "RESTful APIs"],
+  "experience": [
+    { "employer": "SCorp Network", "title": "Full Stack Engineer", "startDate": "2024-12", "endDate": "2025-10", "summary": "Node.js and Express IoT backend services.", "skills": ["Node.js", "Express.js", "MQTT"] },
+    { "employer": "Cairo Studio", "title": "Full Stack Developer", "startDate": "2025-10", "endDate": "2026-05", "summary": "Nest.js APIs and PostgreSQL platforms.", "skills": ["Nest.js", "PostgreSQL", "Docker"] }
+  ],
+  "education": [{ "school": "Alexandria Advanced Technical School", "program": "Electrical Energy Transfer and Distribution" }],
+  "projects": [{ "name": "Sapliy", "summary": "Event-driven payment microservices using Go, gRPC, Kafka, PostgreSQL and Docker." }],
+  "certifications": [],
+  "languages": ["Arabic (Native)", "English (Professional Working Proficiency)"],
+  "portfolioLinks": ["https://github.com/sapliy", "https://yallaegipto.com"],
+  "approvedCvVariants": [
+    { "id": "cv-backend", "name": "Backend CV", "path": "assets/Marwan_Hassan-Resume.pdf", "tags": ["backend", "node.js"], "approved": true }
+  ],
+  "reusableApprovedAnswers": [],
+  "facts": [
+    { "id": "fact-first-name", "field": "identity.firstName", "value": "Marwan", "provenance": "verified_user_fact", "verified": true, "source": "candidate-profile fixture derived from user CV", "updatedAt": "2026-07-19T00:00:00.000Z" },
+    { "id": "fact-last-name", "field": "identity.lastName", "value": "Hassan", "provenance": "verified_user_fact", "verified": true, "source": "candidate-profile fixture derived from user CV", "updatedAt": "2026-07-19T00:00:00.000Z" },
+    { "id": "fact-email", "field": "contact.email", "value": "marwandeveloper33@gmail.com", "provenance": "verified_user_fact", "verified": true, "source": "candidate-profile fixture derived from user CV", "updatedAt": "2026-07-19T00:00:00.000Z" },
+    { "id": "fact-phone", "field": "contact.phone", "value": "+201270189684", "provenance": "verified_user_fact", "verified": true, "source": "candidate-profile fixture derived from user CV", "updatedAt": "2026-07-19T00:00:00.000Z" },
+    { "id": "fact-experience", "field": "experience.totalYears", "value": 2, "provenance": "verified_user_fact", "verified": true, "source": "legacy candidate profile", "updatedAt": "2026-07-19T00:00:00.000Z" },
+    { "id": "fact-sponsorship", "field": "sponsorshipRequired", "value": true, "provenance": "preference", "verified": true, "source": "legacy candidate profile", "updatedAt": "2026-07-19T00:00:00.000Z" },
+    { "id": "fact-relocation", "field": "relocationPreference", "value": "yes", "provenance": "preference", "verified": true, "source": "legacy candidate profile", "updatedAt": "2026-07-19T00:00:00.000Z" },
+    { "id": "fact-salary", "field": "salaryPreferences.minimum", "value": 500, "provenance": "preference", "verified": true, "source": "legacy candidate profile", "updatedAt": "2026-07-19T00:00:00.000Z" },
+    { "id": "fact-authorization", "field": "workAuthorization", "value": "Egypt", "provenance": "verified_user_fact", "verified": true, "source": "candidate location only; must still be confirmed for legal declarations", "updatedAt": "2026-07-19T00:00:00.000Z" }
+  ],
+  "createdAt": "2026-07-19T00:00:00.000Z",
+  "updatedAt": "2026-07-19T00:00:00.000Z"
+}

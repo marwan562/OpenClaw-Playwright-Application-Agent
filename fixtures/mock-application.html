@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Local Job Agent Mock Application</title>
+  <style>body{font:16px system-ui;max-width:720px;margin:2rem auto;padding:0 1rem}label{display:block;margin:1rem 0}input,select{display:block;width:100%;padding:.5rem}button{padding:.7rem 1rem}.hidden{display:none}</style>
+</head>
+<body>
+  <main>
+    <h1>Node.js Backend Engineer</h1>
+    <form id="application-form">
+      <label>Full name<input aria-label="Full name" name="fullName" required></label>
+      <label>Email address<input aria-label="Email address" name="email" type="email" required></label>
+      <label>Phone number<input aria-label="Phone number" name="phone" type="tel" required></label>
+      <label>Years of Node.js experience<input aria-label="Years of Node.js experience" name="years" type="number" required></label>
+      <label>Will you now or in the future require visa sponsorship?
+        <select aria-label="Will you now or in the future require visa sponsorship?" required><option></option><option>Yes</option><option>No</option></select>
+      </label>
+      <label>Are you legally authorized to work in the job location?
+        <select aria-label="Are you legally authorized to work in the job location?" required><option></option><option>Yes</option><option>No</option></select>
+      </label>
+      <label>Expected monthly salary<input aria-label="Expected monthly salary" name="salary" type="number" required></label>
+      <label>Upload approved CV<input aria-label="Upload approved CV" name="resume" type="file" accept=".pdf" required></label>
+      <button type="button" id="review">Review application</button>
+    </form>
+    <section id="review-panel" class="hidden">
+      <h2>Review only — not submitted</h2>
+      <p>The local adapter intentionally stops here.</p>
+      <button type="button" id="submit">Submit application</button>
+    </section>
+  </main>
+  <script>
+    document.getElementById('review').addEventListener('click', () => {
+      if (!document.getElementById('application-form').reportValidity()) return;
+      document.getElementById('application-form').classList.add('hidden');
+      document.getElementById('review-panel').classList.remove('hidden');
+    });
+    document.getElementById('submit').addEventListener('click', () => {
+      document.body.dataset.submitted = 'true';
+      throw new Error('The mock submit control must never be clicked by the toolkit');
+    });
+  </script>
+</body>
+</html>

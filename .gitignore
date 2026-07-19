@@ -18,6 +18,8 @@ npm-debug.log*
 screenshots/
 playwright-report/
 test-results/
+.job-agent/
+artifacts/job-agent/
 
 # System specific files
 .DS_Store
