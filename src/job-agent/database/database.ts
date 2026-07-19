@@ -268,6 +268,12 @@ export class JobAgentDatabase {
       .map((row) => ApplicationSchema.parse(JSON.parse(row.json)));
   }
 
+  countApplicationsForCampaignSince(campaignId: string, since: string): number {
+    const row = this.db.prepare('SELECT COUNT(*) AS count FROM applications WHERE campaign_id = ? AND created_at >= ?')
+      .get(campaignId, since) as { count: number };
+    return row.count;
+  }
+
   addTransition(record: TransitionRecord): void {
     this.db.prepare(`INSERT INTO state_transitions(id, application_id, from_state, to_state, reason, correlation_id, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?)`)

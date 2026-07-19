@@ -1,5 +1,5 @@
 import fs from 'fs';
-import pdf from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 import axios from 'axios';
 import { logger } from '../utils/Logger.js';
 
@@ -7,7 +7,9 @@ export class CVParser {
   public static async parseCV(pdfPath: string): Promise<any> {
     try {
       const dataBuffer = fs.readFileSync(pdfPath);
-      const data = await (pdf as any)(dataBuffer);
+      const parser = new PDFParse({ data: dataBuffer });
+      const data = await parser.getText();
+      await parser.destroy();
       const rawText = data.text;
 
       logger.info('Sending parsed raw CV text to 9Router LLM...', 'CVParser');

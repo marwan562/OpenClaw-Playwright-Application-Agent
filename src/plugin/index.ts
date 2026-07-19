@@ -15,11 +15,12 @@ const pluginRoot = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const ConfigSchema = Type.Object({
   dataDir: Type.Optional(Type.String({ description: 'Local directory for SQLite state and artifacts.' })),
   dryRun: Type.Optional(Type.Boolean({ default: true })),
-  allowedSites: Type.Optional(Type.Array(Type.String(), { default: ['fixture', 'mock'] }))
+  allowedSites: Type.Optional(Type.Array(Type.String(), { default: ['fixture', 'mock'] })),
+  artifactRetentionDays: Type.Optional(Type.Integer({ minimum: 1, default: 14 }))
 }, Strict);
 
-function service<T>(config: { dataDir?: string; dryRun?: boolean }, action: (jobs: JobAgentService) => Promise<T> | T): Promise<T> | T {
-  const jobs = new JobAgentService({ dataDir: config.dataDir, dryRun: config.dryRun });
+function service<T>(config: { dataDir?: string; dryRun?: boolean; artifactRetentionDays?: number }, action: (jobs: JobAgentService) => Promise<T> | T): Promise<T> | T {
+  const jobs = new JobAgentService({ dataDir: config.dataDir, dryRun: config.dryRun, artifactRetentionDays: config.artifactRetentionDays });
   try {
     const result = action(jobs);
     if (result instanceof Promise) return result.finally(() => jobs.close());

@@ -1,7 +1,7 @@
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readdir, rm, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { chromium, type Locator, type Page } from 'playwright';
+import { chromium, type Browser, type BrowserContext, type Locator, type Page } from 'playwright';
 import type { ApplicationDraft, CandidateProfile, Job, JobSearchCriteria } from '../schemas/index.js';
 import { assertSafeLocalFile } from '../security/redaction.js';
 import { FixtureJobAdapter } from './fixture-adapter.js';
@@ -38,16 +38,31 @@ export class MockPlaywrightAdapter implements JobSiteAdapter {
     return page.getByLabel(label, { exact: true });
   }
 
+  private async pruneArtifacts(root: string, retentionDays: number): Promise<void> {
+    const cutoff = Date.now() - retentionDays * 86_400_000;
+    for (const entry of await readdir(root, { withFileTypes: true }).catch(() => [])) {
+      if (!entry.isDirectory()) continue;
+      const target = resolve(root, entry.name);
+      if ((await stat(target)).mtimeMs < cutoff) await rm(target, { recursive: true, force: true });
+    }
+  }
+
   async fill(draft: ApplicationDraft, context: AdapterContext): Promise<FillResult> {
     context.signal?.throwIfAborted();
-    const artifactDir = resolve(context.dataDir, 'artifacts', context.correlationId);
+    const artifactRoot = resolve(context.dataDir, 'artifacts');
+    await mkdir(artifactRoot, { recursive: true, mode: 0o700 });
+    await this.pruneArtifacts(artifactRoot, context.artifactRetentionDays ?? 14);
+    const artifactDir = resolve(artifactRoot, context.correlationId);
     await mkdir(artifactDir, { recursive: true, mode: 0o700 });
-    const browser = await chromium.launch({ headless: true });
-    const browserContext = await browser.newContext();
-    await browserContext.tracing.start({ screenshots: true, snapshots: true });
-    const page = await browserContext.newPage();
+    let browser: Browser | null = null;
+    let browserContext: BrowserContext | null = null;
+    let page: Page | null = null;
     let fieldsFilled = 0;
     try {
+      browser = await chromium.launch({ headless: true });
+      browserContext = await browser.newContext();
+      await browserContext.tracing.start({ screenshots: true, snapshots: true });
+      page = await browserContext.newPage();
       await page.goto(pathToFileURL(this.formPath).href);
       for (const question of draft.questions) {
         context.signal?.throwIfAborted();
@@ -71,11 +86,11 @@ export class MockPlaywrightAdapter implements JobSiteAdapter {
       return { status: 'READY_TO_SUBMIT', fieldsFilled, screenshotPath, message: 'Filled and validated; stopped before final submission.' };
     } catch (error) {
       const screenshotPath = resolve(artifactDir, 'fill-failure.png');
-      await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => undefined);
-      await browserContext.tracing.stop({ path: resolve(artifactDir, 'trace-failure.zip') }).catch(() => undefined);
+      await page?.screenshot({ path: screenshotPath, fullPage: true }).catch(() => undefined);
+      await browserContext?.tracing.stop({ path: resolve(artifactDir, 'trace-failure.zip') }).catch(() => undefined);
       return { status: 'FAILED_RETRYABLE', fieldsFilled, screenshotPath, message: error instanceof Error ? error.message : 'Unknown fill error' };
     } finally {
-      await browser.close();
+      await browser?.close().catch(() => undefined);
     }
   }
 

@@ -13,6 +13,7 @@ export interface AdapterContext {
   dryRun: boolean;
   signal?: AbortSignal;
   approvedFilePaths?: string[];
+  artifactRetentionDays?: number;
 }
 
 export interface FillResult {

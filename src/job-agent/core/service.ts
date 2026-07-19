@@ -28,6 +28,7 @@ export interface JobAgentOptions {
   databasePath?: string;
   dryRun?: boolean;
   adapters?: JobSiteAdapter[];
+  artifactRetentionDays?: number;
 }
 
 export interface CampaignCreateInput {
@@ -59,6 +60,18 @@ function validateCron(schedule: string): void {
   if (fields.length !== 5 || fields.some((field) => !/^[\d*/?,\-]+$/.test(field))) throw new Error(`Invalid five-field cron schedule: ${schedule}`);
 }
 
+function startOfLocalDay(timezone: string, date = new Date()): string {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+  });
+  const current = Object.fromEntries(formatter.formatToParts(date).filter((part) => part.type !== 'literal').map((part) => [part.type, Number(part.value)]));
+  const localMidnightAsUtc = Date.UTC(current.year, current.month - 1, current.day);
+  const rendered = Object.fromEntries(formatter.formatToParts(new Date(localMidnightAsUtc)).filter((part) => part.type !== 'literal').map((part) => [part.type, Number(part.value)]));
+  const renderedAsUtc = Date.UTC(rendered.year, rendered.month - 1, rendered.day, rendered.hour, rendered.minute, rendered.second);
+  return new Date(localMidnightAsUtc - (renderedAsUtc - localMidnightAsUtc)).toISOString();
+}
+
 export function schedulePreview(campaign: Pick<Campaign, 'schedule' | 'timezone' | 'allowedSites' | 'maximumJobsPerRun' | 'minimumScore' | 'mode'>): string {
   const weekdayNine = campaign.schedule === '0 9 * * 1-5' ? 'Every Monday–Friday at 09:00' : `Cron ${campaign.schedule}`;
   const action = campaign.mode === 'research_only'
@@ -74,11 +87,13 @@ export class JobAgentService {
   readonly database: JobAgentDatabase;
   readonly dryRun: boolean;
   private readonly adapters: JobSiteAdapter[];
+  private readonly artifactRetentionDays: number;
 
   constructor(options: JobAgentOptions = {}) {
     this.dataDir = resolve(options.dataDir ?? process.env.JOB_AGENT_DATA_DIR ?? '.job-agent');
     const databasePath = resolve(options.databasePath ?? process.env.JOB_AGENT_DB_PATH ?? resolve(this.dataDir, 'job-agent.sqlite'));
     this.dryRun = options.dryRun ?? process.env.JOB_AGENT_DRY_RUN !== 'false';
+    this.artifactRetentionDays = options.artifactRetentionDays ?? Number(process.env.JOB_AGENT_SCREENSHOT_RETENTION_DAYS ?? 14);
     this.database = new JobAgentDatabase(databasePath);
     this.adapters = options.adapters ?? [new MockPlaywrightAdapter(), new FixtureJobAdapter()];
   }
@@ -86,7 +101,7 @@ export class JobAgentService {
   close(): void { this.database.close(); }
 
   private context(signal?: AbortSignal, dryRun = this.dryRun): AdapterContext {
-    return { correlationId: id(), dataDir: this.dataDir, dryRun, signal };
+    return { correlationId: id(), dataDir: this.dataDir, dryRun, signal, artifactRetentionDays: this.artifactRetentionDays };
   }
 
   private audit(entityType: string, entityId: string, action: string, details: Record<string, unknown>, correlationId: string): void {
@@ -267,6 +282,7 @@ export class JobAgentService {
     if (pending.length) throw new Error(`Approval required: ${pending.map((approval) => approval.id).join(', ')}`);
     if (approvals.some((approval) => approval.status === 'rejected')) throw new Error('Application was rejected by the user');
     if (!application.draft) throw new Error('Application has no prepared draft');
+    const draft = application.draft;
     if (application.state === 'WAITING_FOR_APPROVAL' || application.state === 'ANSWERS_PREPARED') {
       application = this.transition(application, 'FILLING', 'All required answers approved; filling local form', id());
     } else if (application.state === 'FAILED_RETRYABLE') {
@@ -276,7 +292,7 @@ export class JobAgentService {
     const context = this.context(options.signal, options.dryRun ?? this.dryRun);
     context.approvedFilePaths = profile.approvedCvVariants.filter((cv) => cv.approved).map((cv) => cv.path);
     const adapter = this.adapters.find((candidate) => candidate.id === application.adapterId) ?? this.adapterFor(this.getJob(application.jobId));
-    const fillResult = await adapter.fill(application.draft, context);
+    const fillResult = await adapter.fill(draft, context);
     if (fillResult.status !== 'READY_TO_SUBMIT') {
       application = this.transition(application, fillResult.status, fillResult.message, context.correlationId);
       return { application, result: fillResult };
@@ -286,7 +302,7 @@ export class JobAgentService {
     const dryRun = options.dryRun ?? this.dryRun;
     if (dryRun || !options.approveSubmission) return { application, result: fillResult };
     application = this.transition(application, 'SUBMITTING', 'Explicit submission approval supplied', context.correlationId);
-    const submission = await adapter.submit(application.draft, { approved: true, approvedAt: now(), approvalId: id() }, context);
+    const submission = await adapter.submit(draft, { approved: true, approvedAt: now(), approvalId: id() }, context);
     if (submission.status === 'SUBMITTED') {
       application = ApplicationSchema.parse({ ...application, submittedAt: now(), updatedAt: now() });
       this.database.saveApplication(application);
@@ -348,7 +364,10 @@ export class JobAgentService {
     try {
       const search = await this.search(campaign.criteria, signal);
       const scores = search.jobs.map((job) => this.score(job.id, campaign!.profileId, campaign!.criteria.excludedKeywords));
-      const selected = scores.filter((score) => score.score >= campaign!.minimumScore).slice(0, campaign.maximumJobsPerRun);
+      const startOfDay = startOfLocalDay(campaign.timezone);
+      const usedToday = this.database.countApplicationsForCampaignSince(campaign.id, startOfDay);
+      const remainingDaily = Math.max(0, campaign.maximumApplicationsPerDay - usedToday);
+      const selected = scores.filter((score) => score.score >= campaign!.minimumScore).slice(0, Math.min(campaign.maximumJobsPerRun, remainingDaily));
       const prepared: Application[] = [];
       if (campaign.mode !== 'research_only') {
         for (const score of selected) {
@@ -357,7 +376,7 @@ export class JobAgentService {
           prepared.push(result.application);
         }
       }
-      const summary = { runId, discovered: search.jobs.length, duplicates: search.duplicates, scored: scores.length, selected: selected.length, prepared: prepared.length, submitted: 0, failed: 0 };
+      const summary = { runId, discovered: search.jobs.length, duplicates: search.duplicates, scored: scores.length, selected: selected.length, prepared: prepared.length, submitted: 0, failed: 0, dailyLimitRemaining: Math.max(0, remainingDaily - prepared.length) };
       this.database.saveCampaignRun({ id: runId, campaignId, status: 'completed', summary, startedAt, completedAt: now(), correlationId });
       campaign = CampaignSchema.parse({ ...campaign, lastRunAt: now(), updatedAt: now() });
       this.database.saveCampaign(campaign, schedulePreview(campaign));

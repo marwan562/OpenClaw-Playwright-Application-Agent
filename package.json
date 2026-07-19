@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "server": "tsc && node dist/application-agent/server/server.js",
     "start": "tsx src/run.ts",
-    "test": "vitest run",
+    "test": "npm run build --silent && vitest run",
     "test:legacy": "npm run build && node dist/test-local.js",
     "job-agent": "npm run build --silent && node dist/job-agent/cli/index.js",
     "vertical-slice": "npm run build --silent && node dist/job-agent/cli/index.js demo --reset",

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { JobSchema, type ApplicationDraft, type CandidateProfile, type Job, type JobSearchCriteria } from '../schemas/index.js';
 import { normalizeJob, type RawJobListing } from '../core/normalization.js';
 import { prepareAnswer, questionFrom } from '../core/policy.js';
+import { assertUntrustedContentBoundary } from '../security/redaction.js';
 import type { AdapterContext, FillResult, JobSiteAdapter, SubmissionApproval, SubmissionResult } from './types.js';
 
 const RawJobSchema = z.object({
@@ -46,6 +47,7 @@ export class FixtureJobAdapter implements JobSiteAdapter {
 
   async prepare(job: Job, profile: CandidateProfile, context: AdapterContext): Promise<Omit<ApplicationDraft, 'id' | 'applicationId' | 'profileId' | 'createdAt'>> {
     context.signal?.throwIfAborted();
+    assertUntrustedContentBoundary(job.description);
     const questions = [
       questionFrom('Full name', 'text'),
       questionFrom('Email address', 'email'),

@@ -19,7 +19,7 @@ export interface RawJobListing {
 }
 
 function normalizedText(value: string): string {
-  return value.toLocaleLowerCase('en-US').replace(/[^a-z0-9+#.]+/g, ' ').trim().replace(/\s+/g, ' ');
+  return value.toLocaleLowerCase('en-US').replace(/[^a-z0-9+#]+/g, ' ').trim().replace(/\s+/g, ' ');
 }
 
 export function fingerprintJob(input: Pick<RawJobListing, 'employer' | 'title' | 'location' | 'description'>): string {
