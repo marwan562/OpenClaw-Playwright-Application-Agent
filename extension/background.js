@@ -1,48 +1,57 @@
 let ws = null;
-let reconnectInterval = 5000;
+const reconnectInterval = 5000;
+let isConnected = false;
 
 function connectGateway() {
-  // Connect to local OpenClaw companion gateway server (port 3000)
-  ws = new WebSocket('ws://127.0.0.1:3000');
+  console.log('Attempting connection to OpenClaw Gateway...');
+  ws = new WebSocket('ws://127.0.0.1:18789/ws');
 
   ws.onopen = () => {
-    console.log('Connected to OpenClaw Gateway');
+    console.log('Connected to OpenClaw Gateway Server');
+    isConnected = true;
+    chrome.runtime.sendMessage({ action: 'connectionStatus', connected: true }).catch(() => {});
   };
 
   ws.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data);
-      if (data.type === 'log') {
-        chrome.runtime.sendMessage({ action: 'agentLog', text: data.text });
-      }
+      console.log('Gateway Server event:', data);
+      
+      // Relay all gateway WebSocket messages to any active panel or tab listeners
+      chrome.runtime.sendMessage({ action: 'gatewayMessage', payload: data }).catch(() => {});
     } catch (e) {
-      console.error(e);
+      console.error('Error parsing incoming WS payload:', e);
     }
   };
 
   ws.onclose = () => {
     console.log('Disconnected from OpenClaw Gateway. Reconnecting...');
+    isConnected = false;
+    chrome.runtime.sendMessage({ action: 'connectionStatus', connected: false }).catch(() => {});
     setTimeout(connectGateway, reconnectInterval);
+  };
+
+  ws.onerror = (err) => {
+    console.error('WebSocket Error:', err);
   };
 }
 
-// Start connection
+// Initialize gateway connection
 connectGateway();
 
+// Listen to runtime messages from popups, dashboards, sidepanels, content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'checkConnection') {
-    sendResponse({ connected: ws && ws.readyState === WebSocket.OPEN });
+    sendResponse({ connected: isConnected });
     return true;
   }
 
-  if (request.action === 'sendChatMessage') {
+  if (request.action === 'sendWSMessage') {
     if (ws && ws.readyState === WebSocket.OPEN) {
-      // Send chat context to local gateway server
-      ws.send(JSON.stringify({ type: 'chat', text: request.payload }));
-      // Standard local echo response back
-      sendResponse({ reply: `Received prompt: "${request.payload}". Automation pipeline initialized.` });
+      ws.send(JSON.stringify(request.payload));
+      sendResponse({ success: true });
     } else {
-      sendResponse({ reply: 'Could not connect to Gateway. Please check if OpenClaw is running locally.' });
+      sendResponse({ success: false, error: 'WebSocket is offline.' });
     }
     return true;
   }

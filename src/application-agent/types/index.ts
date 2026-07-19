@@ -44,5 +44,6 @@ export interface JobPlatform {
   detectApplyMethod(): Promise<boolean>; // Returns true if "Easy Apply" or automated option is present
   fillApplication(): Promise<void>; // Runs the multi-step filling logic
   review(): Promise<void>; // Stops on review/submit page
+  submitApplication?(): Promise<boolean>; // Performs final submission
   close(): Promise<void>;
 }

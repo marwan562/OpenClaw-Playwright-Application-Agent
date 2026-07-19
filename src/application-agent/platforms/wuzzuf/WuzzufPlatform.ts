@@ -276,4 +276,19 @@ export class WuzzufPlatform implements JobPlatform {
     } catch {}
     return 'Cairo, Egypt';
   }
+
+  public async submitApplication(): Promise<boolean> {
+    logger.info('Submitting application...', 'WuzzufPlatform');
+    for (const selector of SELECTORS.submitButton) {
+      if (await this.browserCtx.isVisible(selector)) {
+        await this.browserCtx.click(selector);
+        await this.browserCtx.waitUntilStable(5000);
+        logger.info('Application submitted successfully!', 'WuzzufPlatform');
+        await this.browserCtx.takeScreenshot('wuzzuf_application_submitted');
+        return true;
+      }
+    }
+    logger.error('Failed to submit application: Submit button not visible.', null, 'WuzzufPlatform');
+    return false;
+  }
 }

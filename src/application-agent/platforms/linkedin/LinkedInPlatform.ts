@@ -439,4 +439,19 @@ export class LinkedInPlatform implements JobPlatform {
     }
     return '';
   }
+
+  public async submitApplication(): Promise<boolean> {
+    logger.info('Submitting application...', 'LinkedInPlatform');
+    for (const selector of SELECTORS.submitButton) {
+      if (await this.browserCtx.isVisible(selector)) {
+        await this.browserCtx.click(selector);
+        await this.browserCtx.waitUntilStable(5000);
+        logger.info('Application submitted successfully!', 'LinkedInPlatform');
+        await this.browserCtx.takeScreenshot('application_submitted');
+        return true;
+      }
+    }
+    logger.error('Failed to submit application: Submit button not visible.', null, 'LinkedInPlatform');
+    return false;
+  }
 }

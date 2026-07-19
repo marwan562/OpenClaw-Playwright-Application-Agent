@@ -262,4 +262,19 @@ export class IndeedPlatform implements JobPlatform {
     } catch {}
     return 'Cairo, Egypt';
   }
+
+  public async submitApplication(): Promise<boolean> {
+    logger.info('Submitting application...', 'IndeedPlatform');
+    for (const selector of SELECTORS.submitButton) {
+      if (await this.browserCtx.isVisible(selector)) {
+        await this.browserCtx.click(selector);
+        await this.browserCtx.waitUntilStable(5000);
+        logger.info('Application submitted successfully!', 'IndeedPlatform');
+        await this.browserCtx.takeScreenshot('indeed_application_submitted');
+        return true;
+      }
+    }
+    logger.error('Failed to submit application: Submit button not visible.', null, 'IndeedPlatform');
+    return false;
+  }
 }

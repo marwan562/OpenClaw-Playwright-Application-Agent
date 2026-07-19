@@ -1,70 +1,722 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>OpenClaw Companion Dashboard</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #09090b;
+      font-family: 'Outfit', sans-serif;
+      background: radial-gradient(circle at top right, #130f26, #09070f, #030205);
       color: #fafafa;
       display: flex;
       height: 100vh;
+      overflow: hidden;
     }
+
+    /* Sidebar Navigation */
     .sidebar {
-      width: 260px;
-      background: #18181b;
-      border-right: 1px solid #27272a;
+      width: 280px;
+      background: rgba(18, 12, 28, 0.65);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       flex-direction: column;
-      padding: 16px;
+      padding: 30px 24px;
+      box-sizing: border-box;
     }
-    .sidebar h2 { font-size: 16px; margin: 0 0 20px 0; color: #6366f1; }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+
+    .brand-logo {
+      font-size: 28px;
+    }
+
+    .brand h2 {
+      font-size: 22px;
+      font-weight: 800;
+      margin: 0;
+      background: linear-gradient(135deg, #a78bfa, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
     .nav-item {
-      padding: 10px 12px;
-      border-radius: 6px;
-      margin-bottom: 8px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-bottom: 10px;
       cursor: pointer;
-      font-size: 14px;
-      transition: background 0.2s;
+      font-size: 15px;
+      font-weight: 600;
+      color: #9ca3af;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    .nav-item:hover, .nav-item.active { background: #27272a; color: white; }
-    .content {
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #fafafa;
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      color: #e9d5ff;
+      box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 12px;
+      color: #6b7280;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .conn-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: #ef4444;
+    }
+    
+    .conn-indicator.online {
+      color: #10b981;
+    }
+
+    .conn-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    /* Main Dashboard View Content */
+    .content-area {
       flex: 1;
-      padding: 32px;
+      padding: 40px;
       overflow-y: auto;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
     }
-    .section-title { font-size: 24px; margin-bottom: 24px; font-weight: bold; }
-    .card {
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 8px;
+
+    .dashboard-tab {
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .dashboard-tab.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.5px;
+    }
+
+    .section-desc {
+      font-size: 14px;
+      color: #9ca3af;
+      margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: rgba(25, 20, 35, 0.45);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
       padding: 20px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #a78bfa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    /* Card Panels */
+    .card {
+      background: rgba(25, 20, 35, 0.45);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 10px;
+    }
+
+    /* Grid layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"], input[type="email"], select, textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: white;
+      padding: 12px 14px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: all 0.3s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #818cf8;
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Buttons */
+    button {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-save:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    /* Onboarding / File Upload Component */
+    .dropzone {
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.01);
+      cursor: pointer;
+      transition: all 0.3s;
       margin-bottom: 20px;
+    }
+
+    .dropzone:hover {
+      border-color: #818cf8;
+      background: rgba(99, 102, 241, 0.03);
+    }
+
+    .dropzone-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .dropzone-text {
+      font-size: 14px;
+      color: #9ca3af;
+    }
+
+    .dropzone-highlight {
+      color: #818cf8;
+      font-weight: 700;
+    }
+
+    /* Jobs Queue Table List */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      font-weight: 700;
+      color: #9ca3af;
+      padding: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e5e7eb;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .match-badge {
+      display: inline-flex;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .match-high { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .match-med { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .match-low { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    .status-pill {
+      display: inline-flex;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    .status-pill.applied { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .status-pill.pending_approval { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .status-pill.ignored { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+
+    .action-btn-small {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .btn-apply-table {
+      background: #818cf8;
+      color: white;
+    }
+    .btn-apply-table:hover {
+      background: #4f46e5;
+    }
+
+    /* Terminal inside Dashboard */
+    .dashboard-terminal {
+      background: #09070f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      height: 400px;
+      overflow-y: auto;
+      color: #e4e4e7;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 26px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #374151;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #6366f1;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
     }
   </style>
 </head>
 <body>
+
+  <!-- Navigation Sidebar -->
   <div class="sidebar">
-    <h2>OpenClaw Dashboard</h2>
-    <div class="nav-item active">Overview</div>
-    <div class="nav-item">9Router Config</div>
-    <div class="nav-item">MCP Servers</div>
-    <div class="nav-item">Logs & Metrics</div>
-  </div>
-  <div class="content">
-    <div class="section-title">Overview</div>
-    <div class="card">
-      <h3>Active Applications</h3>
-      <p>Platforms: LinkedIn, Wuzzuf, Indeed</p>
-      <p>Status: Monitoring active schedules</p>
+    <div class="brand">
+      <span class="brand-logo">🦅</span>
+      <h2>OpenClaw</h2>
     </div>
-    <div class="card">
-      <h3>System Configuration</h3>
-      <p>9Router Mode: Auto routing with latency fallbacks</p>
-      <p>Local Server: 127.0.0.1:20128</p>
+
+    <div class="nav-item active" data-tab="overview">Overview & Queue</div>
+    <div class="nav-item" data-tab="profile">Candidate Profile</div>
+    <div class="nav-item" data-tab="settings">Automation Config</div>
+    <div class="nav-item" data-tab="logs">Diagnostics Logs</div>
+
+    <div class="sidebar-footer">
+      <div>Local Server Status:</div>
+      <div id="dashboard-conn-badge" class="conn-indicator">
+        <span class="conn-dot"></span>
+        <span id="dashboard-conn-text">Disconnected</span>
+      </div>
+      <div style="margin-top: 10px; font-size: 10px;">v1.0.0 (Mac OS Chrome)</div>
     </div>
   </div>
+
+  <!-- Content Dashboard View -->
+  <div class="content-area">
+
+    <!-- Tab 1: Overview and queue -->
+    <div class="dashboard-tab active" id="tab-overview">
+      <div class="section-header">
+        <h1 class="section-title">Overview & Application Queue</h1>
+        <p class="section-desc">Track active application streams, pending decisions, and crawled positions.</p>
+      </div>
+
+      <!-- Stats Grid counter metrics -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Discovered</div>
+          <p class="stat-value" id="stat-discovered">0</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending Decision</div>
+          <p class="stat-value" id="stat-pending" style="color: #fbbf24;">0</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Applied Successfully</div>
+          <p class="stat-value" id="stat-applied" style="color: #34d399;">0</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ignored/Low Fit</div>
+          <p class="stat-value" id="stat-ignored" style="color: #9ca3af;">0</p>
+        </div>
+      </div>
+
+      <!-- Queue Table -->
+      <div class="card">
+        <h3>Position Recommendation Queue</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Job Details</th>
+                <th>Platform</th>
+                <th>AI Match Score</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="queue-table-body">
+              <tr>
+                <td colspan="5" style="text-align: center; color: #6b7280; padding: 30px;">
+                  Queue empty. Populate positions by crawling or browsing platforms.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
+          <button class="btn-save" id="btn-clear-history" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 8px 16px; font-size: 12px;">Clear Queue History</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Profile / Onboarding -->
+    <div class="dashboard-tab" id="tab-profile">
+      <div class="section-header">
+        <h1 class="section-title">Candidate Profile & Onboarding</h1>
+        <p class="section-desc">Manage candidate details and CV profile extractions.</p>
+      </div>
+
+      <div class="grid-2">
+        <!-- Onboarding zone / CV upload -->
+        <div class="card">
+          <h3>CV Auto-Extraction Onboarding</h3>
+          <p style="font-size: 13px; color: #9ca3af; margin-bottom: 20px;">Upload a PDF version of your resume to automatically extract career metrics, contact details, experience years, and skills directly via LLM parsing.</p>
+          
+          <div class="dropzone" id="cv-dropzone">
+            <input type="file" id="cv-file-input" accept=".pdf" style="display: none;">
+            <span class="dropzone-icon">📄</span>
+            <p class="dropzone-text">Drag & drop your PDF CV here or <span class="dropzone-highlight">browse files</span></p>
+          </div>
+          <div id="upload-status" style="font-size: 13px; font-weight: 600; text-align: center; min-height: 20px;"></div>
+        </div>
+
+        <!-- Details Editor Form -->
+        <form class="card" id="profile-form">
+          <h3>Profile Credentials</h3>
+          <div class="grid-2" style="gap: 15px;">
+            <div class="form-group">
+              <label for="prof-firstName">First Name</label>
+              <input type="text" id="prof-firstName" required>
+            </div>
+            <div class="form-group">
+              <label for="prof-lastName">Last Name</label>
+              <input type="text" id="prof-lastName" required>
+            </div>
+            <div class="form-group">
+              <label for="prof-email">Email Address</label>
+              <input type="email" id="prof-email" required>
+            </div>
+            <div class="form-group">
+              <label for="prof-phone">Mobile Phone</label>
+              <input type="text" id="prof-phone" required>
+            </div>
+            <div class="form-group">
+              <label for="prof-city">City</label>
+              <input type="text" id="prof-city" required>
+            </div>
+            <div class="form-group">
+              <label for="prof-country">Country</label>
+              <input type="text" id="prof-country" required>
+            </div>
+            <div class="form-group">
+              <label for="prof-linkedin">LinkedIn Link</label>
+              <input type="text" id="prof-linkedin">
+            </div>
+            <div class="form-group">
+              <label for="prof-github">GitHub Link</label>
+              <input type="text" id="prof-github">
+            </div>
+            <div class="form-group">
+              <label for="prof-portfolio">Portfolio / Web Link</label>
+              <input type="text" id="prof-portfolio">
+            </div>
+            <div class="form-group">
+              <label for="prof-experience">Experience (Years)</label>
+              <input type="text" id="prof-experience" required>
+            </div>
+            
+            <div class="form-group" style="display: flex; flex-direction: column; justify-content: center; gap: 8px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <label style="margin: 0;">Remote Preference</label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="prof-remote">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <label style="margin: 0;">Relocate Preference</label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="prof-relocate">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <label style="margin: 0;">Requires Sponsorship</label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="prof-sponsorship">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="prof-skills">Technical Skills (Comma Separated)</label>
+              <textarea id="prof-skills" required></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label for="prof-salary">Salary Expectation</label>
+              <input type="text" id="prof-salary" placeholder="e.g. 500 USD">
+            </div>
+            <div class="form-group">
+              <label for="prof-notice">Notice Period</label>
+              <input type="text" id="prof-notice" placeholder="e.g. Immediately">
+            </div>
+
+            <div class="form-group full-width" style="text-align: right; margin-top: 10px;">
+              <button type="submit" class="btn-save">Save Profile Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tab 3: Automation Settings -->
+    <div class="dashboard-tab" id="tab-settings">
+      <div class="section-header">
+        <h1 class="section-title">Automation & Orchestrator Config</h1>
+        <p class="section-desc">Tune your routing settings, match parameters, and platform crawler scheduler.</p>
+      </div>
+
+      <form id="settings-form" class="card" style="max-width: 700px;">
+        <h3>Configuration Parameters</h3>
+        <div class="grid-2" style="gap: 20px;">
+          
+          <div class="form-group">
+            <label for="sett-mode">Agent Operating Mode</label>
+            <select id="sett-mode" required>
+              <option value="recommendation">Recommendation Mode (No Applying)</option>
+              <option value="approval">Approval Mode (Requires Manual Confirmation)</option>
+              <option value="autonomous">Autonomous Mode (Auto-Apply & Auto-Submit)</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: center; justify-content: space-between; margin-top: 20px;">
+            <div>
+              <label style="margin: 0; font-weight: 700;">Enable Background Scheduler</label>
+              <div style="font-size: 11px; color: #9ca3af;">Crawls LinkedIn periodically for matches.</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="sett-crawlerEnabled">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="sett-crawlInterval">Search Schedule Interval (Minutes)</label>
+            <input type="text" id="sett-crawlInterval" required>
+          </div>
+
+          <div class="form-group">
+            <label for="sett-matchThreshold">Minimum Match Score Threshold (0-100)</label>
+            <input type="text" id="sett-matchThreshold" required>
+          </div>
+
+          <div class="form-group full-width" style="border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 20px; margin-top: 10px;">
+            <h4 style="margin: 0 0 15px 0; color: #c084fc;">9Router Completion Engine</h4>
+          </div>
+
+          <div class="form-group">
+            <label for="sett-routerUrl">9Router API Endpoint</label>
+            <input type="text" id="sett-routerUrl" required>
+          </div>
+
+          <div class="form-group">
+            <label for="sett-apiKey">LLM/Router API Credentials Key</label>
+            <input type="text" id="sett-apiKey" placeholder="sk-..." required>
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
+            <div>
+              <label style="margin: 0; font-weight: 700;">Telegram Bot Alerts</label>
+              <div style="font-size: 11px; color: #9ca3af;">Dispatches status messages to your bot channel.</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="sett-telegramEnabled">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="form-group full-width" style="text-align: right; margin-top: 15px;">
+            <button type="submit" class="btn-save">Apply Configuration Settings</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tab 4: Logs terminal -->
+    <div class="dashboard-tab" id="tab-logs">
+      <div class="section-header">
+        <h1 class="section-title">Diagnostics Server Logs</h1>
+        <p class="section-desc">Stream raw runtime console debug details and automation trace execution logs.</p>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="margin: 0; border: none; padding: 0;">Live System Console</h3>
+          <button class="btn-save" id="btn-clear-dash-logs" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fafafa; padding: 6px 14px; font-size: 12px;">Clear Output</button>
+        </div>
+        <div class="dashboard-terminal" id="dash-terminal-box">
+          <div style="color: #6b7280;">Log terminal output initialized. Connecting to logger stream...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="dashboard.js"></script>
 </body>
 </html>

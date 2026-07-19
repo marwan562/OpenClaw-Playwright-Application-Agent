@@ -13,12 +13,13 @@ export class CVParser {
       logger.info('Sending parsed raw CV text to 9Router LLM...', 'CVParser');
 
       const apiUrl = process.env.LLM_API_URL || 'http://127.0.0.1:20128/v1';
+      const model = process.env.LLM_MODEL || 'Test';
       const response = await axios.post(`${apiUrl}/chat/completions`, {
-        model: 'Test',
+        model,
         messages: [
           {
             role: 'system',
-            content: 'Extract the structured candidate information from the CV raw text. Return standard JSON matching: { personal: { name: "", email: "", phone: "", location: "" }, skills: [], experience: [{ role: "", company: "", duration: "" }] }'
+            content: 'Extract the structured candidate information from the CV raw text. Return standard JSON matching the CandidateProfile interface:\n{\n  "firstName": "string",\n  "lastName": "string",\n  "email": "string",\n  "phone": "string",\n  "city": "string",\n  "country": "string",\n  "linkedin": "string",\n  "github": "string",\n  "portfolio": "string",\n  "experience": number, // total years of experience as a number\n  "remote": boolean, // remote preference\n  "relocate": boolean, // relocation preference\n  "visaSponsorship": boolean, // visa sponsorship requirement\n  "additionalInfo": {\n    "salaryExpectation": "string (e.g. \'500 USD\')",\n    "noticePeriod": "string (e.g. \'Immediately\')",\n    "authorizedToWorkInUS": "string (Yes/No)",\n    "skills": "comma-separated skills list"\n  }\n}'
           },
           {
             role: 'user',
